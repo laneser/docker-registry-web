@@ -52,6 +52,32 @@ class AuthController {
       render(contentType: 'application/json') {
         tokenJson
       }
+    } else if (authResult.isAnonymous) {
+      // anonymous login, we only accept pull.
+      // and user name becomes anonymous
+      subject = "anonymous"
+
+      def access = []
+      def aclList = authResult.acls
+      scopeList.collect { scope ->
+        log.info "Requested scope: $scope"
+        String ip = request.getRemoteAddr()
+        List actions = authService.getScopePermissions(scope, aclList, ip)
+
+        // filter to only pull
+        actions = actions.findAll{ it == "pull" }
+        scope.actions = actions
+        log.info "Granted scope: ${actions}"
+        access << scope
+      }
+
+      log.info "Access list: ${access}"
+      def tokenJson = tokenService.generate(subject, access)
+
+      log.info "Auth response: $tokenJson"
+      render(contentType: 'application/json') {
+        tokenJson
+      }
     } else {
       render(status: 401, text: 'No auth')
     }

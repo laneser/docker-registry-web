@@ -10,13 +10,15 @@ class AuthResult {
     this.roles = roles
     this.acls = acls
     this.valid = valid
+    this.isAnonymous = false
   }
 
   AuthResult() {
-    this(null, null, false)
+    this(null, null, false, true)
   }
 
   final List<Role> roles
   final List<AccessControl> acls
   final boolean valid
+  final boolean isAnonymous
 }
